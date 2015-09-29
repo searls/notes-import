@@ -17,52 +17,40 @@
 //   - File extension should be stripped from title of new note
 //
 
-var notesApp = Application('Notes')
-notesApp.includeStandardAdditions = true
-notesApp.activate()
+var notesApp = Application('Notes');
+notesApp.includeStandardAdditions = true;
+notesApp.activate();
 
 // Prompt user to pick a folder
+var folderName = notesApp.chooseFolder();
+var folderContents = Application('System Events').folders.
+      byName(folderName.toString()).diskItems.name();
 
-var folderName = notesApp.chooseFolder()
+folderContents.forEach(function(item) {
+  var fileContents = fileContentsAtPath(folderName + '/' + item);
 
-var folderContents = Application('System Events').folders.byName(folderName.toString()).diskItems.name()
-
-folderContents.forEach(function(item) 
-{
-	var fileContents = fileContentsAtPath(folderName + '/' + item)
-	
-	if ( fileContents )
-	{
-		var note = notesApp.Note({
-			'name': item,
-			'body': fileContents.replace(/\n/g,'<br>')
-		})
-
-		notesApp.folders[0].notes.push(note)
-	}
+  if(fileContents) {
+    notesApp.folders[0].notes.push(notesApp.Note({
+      'name': item,
+      'body': fileContents.replace(/\n/g, '<br>')
+    }));
+  }
 })
 
-function fileContentsAtPath(pathAsString) 
-{
-	var path = Path(pathAsString)
+function fileContentsAtPath(pathAsString)  {
+  var path = Path(pathAsString),
+      app = Application.currentApplication()
 
-	var app = Application.currentApplication()
-	app.includeStandardAdditions = true
-		
-	var file = app.openForAccess(path);
-    
-	var eof = app.getEof(file)
-	var data = null
-	
-    if(eof > 0) {
-		data = app.read(file, 
-		{
-			'to': eof
-		});
-	}
+  app.includeStandardAdditions = true
 
-    app.closeAccess(file);
+  var file = app.openForAccess(path),
+      eof = app.getEof(file),
+      data = null;
 
-	
-	return data;
+  if(eof > 0) {
+    data = app.read(file, {to: eof});
+  }
+  
+  app.closeAccess(file);
+  return data;
 }
