@@ -31,7 +31,7 @@ folderContents.forEach(function(item)
 {
 	var fileContents = fileContentsAtPath(folderName + '/' + item)
 	
-	if ( fileContents !== false )
+	if ( fileContents )
 	{
 		var note = notesApp.Note({
 			'name': item,
@@ -49,33 +49,20 @@ function fileContentsAtPath(pathAsString)
 	var app = Application.currentApplication()
 	app.includeStandardAdditions = true
 		
-	try 
-	{
-		var file = app.openForAccess(path);
-	}
-	catch (e) 
-	{
-		return false;
-	}
+	var file = app.openForAccess(path);
     
 	var eof = app.getEof(file)
 	var data = null
 	
-	try 
-	{
+    if(eof > 0) {
 		data = app.read(file, 
 		{
 			'to': eof
 		});
-	} 
-	catch (e) 
-	{    
-		return false;
-	} 
-	finally 
-	{
-		app.closeAccess(file);
 	}
+
+    app.closeAccess(file);
+
 	
 	return data;
 }
